@@ -142,10 +142,74 @@
   .empty{text-align:center;padding:36px;color:var(--muted);}
   .empty .ico{font-size:32px;margin-bottom:8px;}
 
-  @media(max-width:650px){
-    .sidebar{width:54px;}
-    .sidebar .nav-item span,.sidebar .nav-section,.sidebar-logo h2,.sidebar-logo small,.user-badge .name,.user-badge .role{display:none;}
-    .stats-grid{grid-template-columns:1fr 1fr;}
+  /* HAMBURGER BUTTON */
+  .hamburger{display:none;background:none;border:none;cursor:pointer;padding:6px;color:var(--text);font-size:20px;line-height:1;}
+
+  /* SIDEBAR OVERLAY (mobile) */
+  .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:49;}
+  .sidebar-overlay.show{display:block;}
+
+  @media(max-width:768px){
+    /* Login */
+    .login-card{width:100%;max-width:360px;padding:28px 20px;margin:16px;}
+
+    /* Layout */
+    .app{flex-direction:column;}
+    .hamburger{display:flex;align-items:center;justify-content:center;}
+
+    /* Sidebar jadi drawer dari kiri */
+    .sidebar{
+      position:fixed;left:0;top:0;bottom:0;
+      width:240px;z-index:50;
+      transform:translateX(-100%);
+      transition:transform .25s ease;
+    }
+    .sidebar.open{transform:translateX(0);}
+
+    /* Main area full width */
+    .main{width:100%;height:100vh;}
+
+    /* Topbar */
+    .topbar{padding:10px 14px;gap:8px;}
+    .topbar h3{font-size:13px;}
+
+    /* Content */
+    .content{padding:12px;}
+
+    /* Stats grid 2 kolom */
+    .stats-grid{grid-template-columns:1fr 1fr;gap:8px;}
+    .stat-card .val{font-size:22px;}
+
+    /* Form grid 1 kolom */
+    .form-grid{grid-template-columns:1fr;}
+
+    /* Dashboard 2-col grid jadi 1-col */
+    .dashboard-grid{grid-template-columns:1fr!important;}
+
+    /* Card */
+    .card{padding:12px;}
+
+    /* Month tabs scroll */
+    .month-tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;}
+    .month-tab{flex-shrink:0;}
+
+    /* Download bar wrap */
+    .dl-bar{flex-wrap:wrap;gap:6px;}
+
+    /* Modal full screen di mobile */
+    .modal{width:100%;max-width:100%;margin:0;border-radius:16px 16px 0 0;position:fixed;bottom:0;left:0;right:0;max-height:85vh;}
+    .modal-bg{align-items:flex-end;}
+
+    /* Table scroll hint */
+    .monitor-wrap{-webkit-overflow-scrolling:touch;}
+
+    /* Topbar tag */
+    .tag-region{font-size:10px;padding:2px 7px;}
+  }
+
+  @media(max-width:400px){
+    .stats-grid{grid-template-columns:1fr;}
+    .topbar h3{font-size:12px;}
   }
 </style>
 <!-- Loading screen -->
@@ -158,9 +222,7 @@
   .lds-ring div:nth-child(2){animation-delay:-.3s;}
   .lds-ring div:nth-child(3){animation-delay:-.15s;}
   @keyframes lds-ring{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
-  #sb-config-banner{position:fixed;bottom:0;left:0;right:0;background:#1e2538;border-top:2px solid #f97316;padding:14px 20px;z-index:999;display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:13px;}
-  #sb-config-banner input{flex:1;min-width:200px;background:#0f1117;border:1px solid #2e3348;border-radius:6px;padding:7px 10px;color:#e8eaf0;font-size:12px;outline:none;}
-  #sb-config-banner input:focus{border-color:#f97316;}
+  #sb-config-banner{display:none!important;}
 </style>
 </head>
 <body>
@@ -188,44 +250,40 @@ let REGIONS=['Ternate','Tobelo','Tidore','Morotai','Bacan'];
 const TABUNGS=['50 KG','12 KG','5.5 KG'];
 const STATUSES=['ISI','KOSONG','BOCOR'];
 const CUR_YEAR=new Date().getFullYear();
-const SB_CFG_KEY='lpg_sb_config';
 
 /* ===== SUPABASE ===== */
+const SB_URL='https://mpdtlufbtahnrmzisggs.supabase.co';
+const SB_ANON='sb_publishable_0s7XVtHpxblOeZY5uYTyBw_HA1eyie7';
 let SB=null;
 
-function getSbConfig(){
-  try{ return JSON.parse(localStorage.getItem(SB_CFG_KEY)||'null'); }catch(e){return null;}
-}
+function getSbConfig(){ return {url:SB_URL,key:SB_ANON}; }
 function saveSupabaseConfig(){
-  const url=document.getElementById('sb-url').value.trim();
-  const key=document.getElementById('sb-key').value.trim();
-  if(!url||!key){alert('URL dan Key wajib diisi!');return;}
-  localStorage.setItem(SB_CFG_KEY,JSON.stringify({url,key}));
   location.reload();
 }
 async function initSupabase(){
-  const cfg=getSbConfig();
-  if(!cfg){
-    document.getElementById('sb-config-banner').style.display='flex';
-    document.getElementById('loading-screen').classList.add('hide');
-    // Fallback ke localStorage mode
-    startApp(false);
-    return;
-  }
   try{
-    SB=supabase.createClient(cfg.url,cfg.key);
-    // Test koneksi
+    SB=supabase.createClient(SB_URL,SB_ANON);
     const {error}=await SB.from('lpg_users').select('id').limit(1);
     if(error) throw error;
     await loadAllData();
-    startApp(true);
+    startApp();
   }catch(e){
     console.error('Supabase error:',e);
-    document.getElementById('sb-config-banner').style.display='flex';
     document.getElementById('loading-screen').classList.add('hide');
-    showToast('⚠️ Gagal konek Supabase, cek URL/Key','error');
-    startApp(false);
+    showErrorPage('❌ Gagal terhubung ke database. Periksa koneksi internet Anda lalu refresh halaman.');
   }
+}
+
+function showErrorPage(msg){
+  document.getElementById('root').innerHTML=`
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:32px;max-width:420px;width:100%;text-align:center;">
+        <div style="font-size:40px;margin-bottom:16px;">🔌</div>
+        <p style="color:var(--text);font-size:14px;line-height:1.6;margin-bottom:20px;">${msg}</p>
+        <button class="btn btn-primary" onclick="location.reload()" style="width:100%">🔄 Coba Lagi</button>
+        <p style="margin-top:12px;font-size:11px;color:var(--muted)">Isi URL & Key Supabase di banner bawah ↓</p>
+      </div>
+    </div>`;
 }
 
 /* ===== STATE ===== */
@@ -350,13 +408,11 @@ async function updateTxRegion(oldName,newName){
 }
 
 /* ===== APP START ===== */
-function startApp(withSb){
-  useSupabase=withSb;
-  if(!withSb) localLoad();
+function startApp(){
+  useSupabase=true;
   document.getElementById('loading-screen').classList.add('hide');
   render();
-  // Realtime sync
-  if(withSb) setupRealtime();
+  setupRealtime();
 }
 
 function setupRealtime(){
@@ -419,37 +475,65 @@ function renderLogin(){
     <div class="login-card">
       <div class="login-logo"><span style="font-size:28px">🔥</span><h1>Monitoring <span>LPG</span><br>Multi Region</h1></div>
       <p class="login-sub">Sistem monitoring tabung LPG Bright Gas Pertamina</p>
-      <div class="field"><label>Username</label><input id="iu" placeholder="username" onkeydown="if(event.key==='Enter')doLogin()"></div>
-      <div class="field"><label>Password</label><input id="ip" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="field"><label>Username</label><input id="iu" placeholder="username" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="field"><label>Password</label><input id="ip" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <div id="lerr" style="color:#ef4444;font-size:12px;margin-top:6px;min-height:18px"></div>
-      <button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="doLogin()">Masuk →</button>
-      <div class="login-hint"><b>Demo Akun:</b><br>
-        admin / admin123 → Super Admin<br>
-        ternate / ternate123 → Operator Ternate<br>
-        tobelo / tobelo123 → Operator Tobelo<br>
-        tidore / tidore123 → Operator Tidore<br>
-        morotai / morotai123 → Operator Morotai<br>
-        bacan / bacan123 → Operator Bacan
+      <button class="btn btn-primary" style="width:100%;margin-top:10px;padding:11px" onclick="doLogin()">Masuk →</button>
+      <div style="margin-top:14px;padding:10px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:7px;font-size:11px;color:#10b981;text-align:center;">
+        🔒 Login menggunakan akun dari database
       </div>
     </div>
   </div>`;
 }
-function doLogin(){
+async function doLogin(){
   const u=document.getElementById('iu').value.trim();
   const p=document.getElementById('ip').value.trim();
-  const user=S.users.find(x=>x.username===u&&x.password===p);
-  if(!user){document.getElementById('lerr').textContent='❌ Username atau password salah';return;}
-  me=user; page='dashboard'; render();
+  const errEl=document.getElementById('lerr');
+  if(!u||!p){errEl.textContent='❌ Username dan password wajib diisi';return;}
+
+  // Blokir jika Supabase tidak terhubung
+  if(!SB){
+    errEl.textContent='❌ Tidak terhubung ke database. Refresh halaman.';
+    return;
+  }
+
+  errEl.innerHTML='<span style="color:#8b91a7">⏳ Memeriksa...</span>';
+  const btn=document.querySelector('.login-card .btn-primary');
+  if(btn){btn.disabled=true;btn.textContent='Memeriksa...';}
+
+  try{
+    const {data,error}=await SB.from('lpg_users')
+      .select('*').eq('username',u).eq('password',p).single();
+    if(error||!data){
+      errEl.textContent='❌ Username atau password salah';
+      if(btn){btn.disabled=false;btn.textContent='Masuk →';}
+      return;
+    }
+    me={id:data.id,username:data.username,password:data.password,name:data.name,role:data.role,region:data.region};
+    if(!S.users.find(x=>x.id===me.id)) S.users.push(me);
+    page='dashboard';
+    render();
+  }catch(e){
+    errEl.textContent='❌ Koneksi ke database gagal. Coba lagi.';
+    if(btn){btn.disabled=false;btn.textContent='Masuk →';}
+  }
 }
 
 /* ===== SIDEBAR ===== */
+let sidebarOpen=false;
+function toggleSidebar(){ sidebarOpen=!sidebarOpen; const s=document.getElementById('sidebar'); const o=document.getElementById('sidebar-overlay'); if(s){s.classList.toggle('open',sidebarOpen);} if(o){o.classList.toggle('show',sidebarOpen);} }
+function closeSidebar(){ sidebarOpen=false; const s=document.getElementById('sidebar'); const o=document.getElementById('sidebar-overlay'); if(s)s.classList.remove('open'); if(o)o.classList.remove('show'); }
+function navTo(p){ page=p; closeSidebar(); render(); }
+
 function renderSidebar(){
   const isSA=me.role==='superadmin';
-  const nv=(pg,ico,lbl)=>`<div class="nav-item${page===pg?' active':''}" onclick="nav('${pg}')"><span class="ico">${ico}</span><span>${lbl}</span></div>`;
+  const nv=(pg,ico,lbl)=>`<div class="nav-item${page===pg?' active':''}" onclick="navTo('${pg}')"><span class="ico">${ico}</span><span>${lbl}</span></div>`;
   let rekapNav=(isSA?(S.regions||REGIONS):me.region?[me.region]:[]).map(r=>
-    `<div class="nav-item${page==='rekap_'+r?' active':''}" onclick="nav('rekap_${r}')"><span class="ico">📊</span><span>${r}</span></div>`
+    `<div class="nav-item${page==='rekap_'+r?' active':''}" onclick="navTo('rekap_${r}')"><span class="ico">📊</span><span>${r}</span></div>`
   ).join('');
-  return `<div class="sidebar">
+  return `
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+  <div class="sidebar" id="sidebar">
     <div class="sidebar-logo"><h2>🔥 LPG Monitor</h2><small>Bright Gas Pertamina</small></div>
     <div class="sidebar-user"><div class="user-badge"><div class="name">${me.name}</div><div class="role">${me.role==='superadmin'?'Super Admin':'Operator – '+me.region}</div></div></div>
     <nav>
@@ -470,7 +554,7 @@ function renderSidebar(){
 /* ===== MAIN ===== */
 function renderMain(){
   const titles={'dashboard':'🏠 Dashboard','masuk':'📥 Input Barang Masuk','keluar':'📤 Input Barang Keluar','riwayat':'📋 Riwayat Transaksi','users':'👥 Kelola User','regions':'🗂️ Kelola Region','rekap_semua':'🗺️ Rekap Semua Region'};
-  REGIONS.forEach(r=>{ titles['rekap_'+r]=`📊 Rekap Monitoring – ${r}`; });
+  REGIONS.forEach(r=>{ titles['rekap_'+r]=`📊 Rekap – ${r}`; });
   let body='';
   if(page==='dashboard') body=renderDashboard();
   else if(page==='masuk') body=renderFormInput('masuk');
@@ -480,12 +564,18 @@ function renderMain(){
   else if(page==='regions') body=renderRegions();
   else if(page==='rekap_semua') body=renderMonitorTable(S.regions||REGIONS, true);
   else if(page.startsWith('rekap_')){ const rg=page.replace('rekap_',''); body=renderMonitorTable([rg], false); }
-  const aHtml=alertMsg?`<div class="alert alert-${alertMsg.type}"><span>${alertMsg.msg}</span><button class="alert-close" onclick="closeAlert()" title="Tutup">✕</button></div>`:'';
+  const aHtml=alertMsg?`<div class="alert alert-${alertMsg.type}"><span>${alertMsg.msg}</span><button class="alert-close" onclick="closeAlert()">✕</button></div>`:'';
   const tag=me.role==='superadmin'
     ?`<span class="tag-region" style="background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.3);color:#60a5fa">⚡ Super Admin</span>`
     :`<span class="tag-region">📍 ${me.region}</span>`;
   return `<div class="main">
-    <div class="topbar"><h3>${titles[page]||page}</h3>${tag}</div>
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="hamburger" onclick="toggleSidebar()" title="Menu">☰</button>
+        <h3>${titles[page]||page}</h3>
+      </div>
+      ${tag}
+    </div>
     <div class="content">${aHtml}${body}</div>
   </div>`;
 }
@@ -521,7 +611,7 @@ function renderDashboard(){
     <div class="stat-card stat-orange"><div class="val">${txToday}</div><div class="lbl">Transaksi Hari Ini</div></div>
     <div class="stat-card stat-blue"><div class="val">${S.transactions.filter(t=>regs.includes(t.region)).length}</div><div class="lbl">Total Transaksi</div></div>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:16px">
+  <div class="dashboard-grid" style="display:grid;grid-template-columns:1fr 1.6fr;gap:16px">
     <div class="card">
       <div class="card-title">📍 Per Region – ${MONTHS[mi]}</div>
       <table class="riwayat-tbl"><tr><th>Region</th><th>Masuk</th><th>Keluar</th><th>Saldo</th></tr>${regRows}</table>
