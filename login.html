@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login – Monitoring LPG</title>
+<style>
+  :root{
+    --bg:#0f1117;--surface:#1a1d27;--surface2:#232736;--border:#2e3348;
+    --accent:#f97316;--accent2:#3b82f6;--accent3:#10b981;
+    --danger:#ef4444;--warn:#eab308;--text:#e8eaf0;--muted:#8b91a7;
+  }
+  :root[data-theme="light"]{
+    --bg:#f1f4f9;--surface:#ffffff;--surface2:#eef1f7;--border:#d6dded;
+    --accent:#ea580c;--accent2:#2563eb;--accent3:#059669;
+    --danger:#dc2626;--warn:#b45309;--text:#1c2433;--muted:#5d6678;
+  }
+  .login-theme-btn{position:fixed;top:16px;right:16px;z-index:5;background:var(--surface);border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:10px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:border-color .15s;}
+  .login-theme-btn:hover{border-color:var(--accent);}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:13px;}
+
+  /* BG ANIMATED */
+  .bg-glow{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
+  .bg-glow::before{content:'';position:absolute;top:-200px;left:-200px;width:600px;height:600px;
+    background:radial-gradient(circle,rgba(249,115,22,.12) 0%,transparent 70%);
+    animation:floatA 8s ease-in-out infinite;}
+  .bg-glow::after{content:'';position:absolute;bottom:-200px;right:-200px;width:500px;height:500px;
+    background:radial-gradient(circle,rgba(59,130,246,.1) 0%,transparent 70%);
+    animation:floatB 10s ease-in-out infinite;}
+  @keyframes floatA{0%,100%{transform:translate(0,0);}50%{transform:translate(40px,30px);}}
+  @keyframes floatB{0%,100%{transform:translate(0,0);}50%{transform:translate(-30px,-40px);}}
+
+  /* WRAP */
+  .login-wrap{position:relative;z-index:1;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .login-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:44px 40px;width:400px;max-width:100%;
+    box-shadow:0 24px 60px rgba(0,0,0,.5),0 0 0 1px rgba(249,115,22,.06);
+    animation:slideUp .4s ease;}
+  @keyframes slideUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+
+  .login-logo{display:flex;align-items:center;gap:12px;margin-bottom:6px;}
+  .login-logo .ico{width:46px;height:46px;background:rgba(249,115,22,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+  .login-logo h1{font-size:18px;font-weight:800;line-height:1.25;}
+  .login-logo span{color:var(--accent);}
+  .login-sub{color:var(--muted);font-size:12px;margin-bottom:28px;margin-left:58px;line-height:1.5;}
+
+  .divider{height:1px;background:var(--border);margin-bottom:24px;}
+
+  label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;}
+  .input-wrap{position:relative;}
+  .input-wrap .ico-left{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;}
+  .input-wrap .toggle-pw{position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;padding:2px 4px;transition:color .15s;}
+  .input-wrap .toggle-pw:hover{color:var(--text);}
+  input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:11px 12px 11px 36px;color:var(--text);font-size:13px;outline:none;transition:border-color .2s,box-shadow .2s;}
+  input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(249,115,22,.12);}
+  .field{margin-bottom:16px;}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 20px;border-radius:9px;border:none;cursor:pointer;font-size:13px;font-weight:700;transition:opacity .15s,transform .1s,box-shadow .15s;}
+  .btn:active{transform:scale(.97);}
+  .btn-primary{background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;box-shadow:0 4px 16px rgba(249,115,22,.3);}
+  .btn-primary:hover{opacity:.92;box-shadow:0 6px 20px rgba(249,115,22,.4);}
+  .btn-primary:disabled{opacity:.55;cursor:not-allowed;transform:none;}
+
+  .login-err{color:var(--danger);font-size:12px;margin-top:8px;min-height:20px;display:flex;align-items:center;gap:6px;}
+  .login-hint{margin-top:20px;padding:13px 15px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;font-size:11px;color:var(--muted);line-height:2;}
+  .login-hint code{background:rgba(249,115,22,.12);color:var(--accent);padding:1px 6px;border-radius:4px;font-family:monospace;}
+  .login-hint .row{display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:4px;margin-bottom:4px;}
+  .login-hint .row:last-child{border-bottom:none;padding-bottom:0;margin-bottom:0;}
+  .badge-role{display:inline-block;padding:1px 7px;border-radius:99px;font-size:9px;font-weight:700;}
+  .badge-sa{background:rgba(249,115,22,.15);color:#f97316;}
+  .badge-op{background:rgba(59,130,246,.15);color:#60a5fa;}
+
+  .footer-note{margin-top:18px;text-align:center;font-size:11px;color:var(--muted);}
+
+  /* LOADING */
+  .loader-wrap{text-align:center;padding:40px 0;}
+  .lds-ring{width:40px;height:40px;position:relative;display:inline-block;margin-bottom:12px;}
+  .lds-ring div{box-sizing:border-box;display:block;position:absolute;width:34px;height:34px;margin:3px;border:3px solid #f97316;border-radius:50%;animation:lds-ring 1.2s cubic-bezier(.5,0,.5,1) infinite;border-color:#f97316 transparent transparent transparent;}
+  .lds-ring div:nth-child(1){animation-delay:-.45s;}
+  .lds-ring div:nth-child(2){animation-delay:-.3s;}
+  .lds-ring div:nth-child(3){animation-delay:-.15s;}
+  @keyframes lds-ring{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+
+  @media(max-width:440px){
+    .login-card{padding:28px 20px;}
+    .login-sub{margin-left:0;margin-top:8px;}
+  }
+</style>
+</head>
+<body>
+<div class="bg-glow"></div>
+<button class="login-theme-btn" onclick="toggleTheme()" title="Ganti mode terang/gelap">🌓</button>
+<div class="login-wrap" id="root">
+  <!-- akan diisi JS -->
+  <div class="login-card">
+    <div class="loader-wrap">
+      <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
+      <p style="color:var(--muted);font-size:12px">Menghubungkan ke database...</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<!-- Kredensial Supabase dipusatkan di js/config.js (tidak diduplikasi di sini). -->
+<script src="js/config.js"></script>
+<script>
+let SB=null, sbOk=false;
+
+/* Deteksi "fungsi RPC belum ada" → schema.sql belum dijalankan. */
+function rpcMissing(err){
+  const m=((err&&(err.code||err.message))||'').toString();
+  return m.includes('PGRST202')||m.includes('Could not find the function')
+      ||m.includes('schema cache')||m.includes('does not exist')||m.includes('404');
+}
+
+async function init(){
+  try{
+    SB=supabase.createClient(SB_URL,SB_ANON);
+    /* Probe koneksi via tabel yang boleh dibaca anon (lpg_users dikunci RLS
+       setelah schema.sql dijalankan). */
+    const {error}=await SB.from('lpg_regions').select('name').limit(1);
+    if(error) throw error;
+    sbOk=true;
+  }catch(e){
+    sbOk=false;
+    console.error(e);
+  }
+  renderLogin();
+}
+
+/* Verifikasi kredensial. Jalur aman: RPC lpg_login (password di-hash & dicek
+   di server). Fallback ke pencocokan langsung HANYA bila schema.sql belum
+   dijalankan; setelah migrasi, tabel users terkunci sehingga hanya RPC dipakai. */
+async function loginLookup(u,p){
+  const r=await SB.rpc('lpg_login',{p_username:u,p_password:p});
+  if(!r.error) return (r.data&&r.data[0])||null;
+  if(rpcMissing(r.error)){
+    console.warn('[LPG] RPC lpg_login belum ada — memakai jalur lama. Jalankan supabase/schema.sql untuk mengaktifkan keamanan.');
+    const r2=await SB.from('lpg_users').select('*').eq('username',u).eq('password',p).limit(1);
+    return (r2.data&&r2.data[0])||null;
+  }
+  throw r.error;
+}
+
+function renderLogin(){
+  document.getElementById('root').innerHTML=`
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="ico">🔥</div>
+      <h1>Monitoring <span>LPG</span><br>Multi Region</h1>
+    </div>
+    <p class="login-sub">Sistem monitoring tabung Bright Gas Pertamina</p>
+    <div class="divider"></div>
+    ${!sbOk?`<div style="padding:12px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:8px;color:#ef4444;font-size:12px;margin-bottom:16px;text-align:center">
+      ⚠️ Gagal terhubung ke database.<br><button onclick="location.reload()" style="margin-top:6px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#ef4444;border-radius:6px;padding:4px 12px;cursor:pointer;font-size:11px;font-weight:600">🔄 Coba Lagi</button>
+    </div>`:''}
+    <div class="field">
+      <label>Username</label>
+      <div class="input-wrap">
+        <span class="ico-left">👤</span>
+        <input id="iu" type="text" placeholder="Masukkan username" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <div class="input-wrap">
+        <span class="ico-left">🔑</span>
+        <input id="ip" type="password" placeholder="Masukkan password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+        <button class="toggle-pw" onclick="togglePw()" id="pw-eye" title="Tampilkan password">👁</button>
+      </div>
+    </div>
+    <div class="login-err" id="lerr"></div>
+    <button class="btn btn-primary" id="btn-login" style="width:100%;margin-top:4px;padding:13px" onclick="doLogin()" ${!sbOk?'disabled':''}>
+      <span id="btn-txt">Masuk ke Aplikasi →</span>
+    </button>
+
+    <div class="login-hint">
+      <div style="font-size:10px;font-weight:700;color:var(--text);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">🔒 Akses</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.7">Gunakan akun yang diberikan oleh <b style="color:var(--text)">Super Admin</b>. Operator hanya dapat mengakses region yang ditugaskan kepadanya.</div>
+    </div>
+    <p class="footer-note">🛡️ Login terhubung ke database Supabase</p>
+  </div>`;
+}
+
+function togglePw(){
+  const inp=document.getElementById('ip');
+  const btn=document.getElementById('pw-eye');
+  if(inp.type==='password'){inp.type='text';btn.textContent='🙈';}
+  else{inp.type='password';btn.textContent='👁';}
+}
+
+async function doLogin(){
+  const u=document.getElementById('iu').value.trim();
+  const p=document.getElementById('ip').value.trim();
+  const errEl=document.getElementById('lerr');
+  const btn=document.getElementById('btn-login');
+  const btnTxt=document.getElementById('btn-txt');
+
+  errEl.innerHTML='';
+  if(!u||!p){errEl.innerHTML='❌ Username dan password wajib diisi';return;}
+  if(!SB||!sbOk){errEl.innerHTML='❌ Tidak terhubung ke database. Refresh halaman.';return;}
+
+  btn.disabled=true;
+  btnTxt.innerHTML='⏳ Memeriksa...';
+
+  try{
+    const data=await loginLookup(u,p);
+    if(!data){
+      errEl.innerHTML='❌ Username atau password salah';
+      btn.disabled=false; btnTxt.innerHTML='Masuk ke Aplikasi →';
+      return;
+    }
+    if(data.role==='operator'&&!data.region){
+      errEl.innerHTML='❌ Akun operator belum memiliki region. Hubungi admin.';
+      btn.disabled=false; btnTxt.innerHTML='Masuk ke Aplikasi →';
+      return;
+    }
+    // Simpan session ke sessionStorage lalu redirect
+    sessionStorage.setItem('lpg_me',JSON.stringify({
+      id:data.id,username:data.username,name:data.name,
+      role:data.role,region:data.region||null
+    }));
+    // Log ke activity log
+    try{
+      await SB.from('lpg_activity_log').insert({
+        id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),
+        user_id:data.id,username:data.username,name:data.name,
+        role:data.role,region:data.region||null,
+        action:'LOGIN',detail:'Login berhasil',
+        created_at:new Date().toISOString()
+      });
+    }catch(e){}
+    btnTxt.innerHTML='✅ Berhasil! Mengalihkan...';
+    setTimeout(()=>{ window.location.href='pages/dashboard/dashboard.html'; },500);
+  }catch(e){
+    errEl.innerHTML='❌ Koneksi ke database gagal. Coba lagi.';
+    btn.disabled=false; btnTxt.innerHTML='Masuk ke Aplikasi →';
+  }
+}
+
+init();
+</script>
+</body>
+</html>

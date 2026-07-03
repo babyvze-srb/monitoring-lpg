@@ -1,0 +1,12 @@
+{
+  "name": "lpg-monitor-final",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sistem monitoring stok tabung LPG (Bright Gas Pertamina) multi-region — Multi-Page App vanilla JS + Supabase.",
+  "scripts": {
+    "start": "npx --yes serve .",
+    "dev": "npx --yes serve ."
+  },
+  "keywords": ["lpg", "monitoring", "supabase", "inventory"],
+  "license": "UNLICENSED"
+}

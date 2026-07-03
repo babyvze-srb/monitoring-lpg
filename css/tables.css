@@ -1,0 +1,36 @@
+/* MONITOR TABLE */
+.monitor-wrap{
+  overflow-x:auto;margin-bottom:18px;
+  scrollbar-width:thin;scrollbar-color:rgba(249,115,22,.3) transparent;
+}
+.monitor-wrap::-webkit-scrollbar{height:8px;}
+.monitor-wrap::-webkit-scrollbar-track{background:transparent;}
+.monitor-wrap::-webkit-scrollbar-thumb{background:rgba(249,115,22,.25);border-radius:99px;border:2px solid var(--bg);background-clip:padding-box;}
+.monitor-wrap::-webkit-scrollbar-thumb:hover{background:var(--accent);background-clip:padding-box;}
+.monitor-tbl{border-collapse:collapse;min-width:900px;font-size:12px;}
+.monitor-tbl th,.monitor-tbl td{border:1px solid var(--border);padding:0;}
+.monitor-tbl th{background:var(--surface4);color:var(--muted);font-weight:700;text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.04em;padding:6px 8px;}
+.monitor-tbl td{padding:5px 8px;text-align:center;background:var(--surface);}
+.monitor-tbl .th-group{background:var(--surface3);color:var(--text);font-size:11px;padding:7px 8px;}
+.monitor-tbl .th-50{background:rgba(249,115,22,.18);color:#fb923c;}
+.monitor-tbl .th-12{background:rgba(59,130,246,.18);color:#60a5fa;}
+.monitor-tbl .th-55{background:rgba(16,185,129,.18);color:#34d399;}
+.monitor-tbl .region-cell{background:var(--surface3);font-weight:700;color:var(--text);padding:0 10px;text-align:left;white-space:nowrap;vertical-align:middle;}
+.monitor-tbl .jenis-isi{background:rgba(16,185,129,.07);color:#34d399;font-weight:700;font-size:10px;letter-spacing:.04em;}
+.monitor-tbl .jenis-kosong{background:rgba(139,145,167,.07);color:#9ca3af;font-weight:700;font-size:10px;letter-spacing:.04em;}
+.monitor-tbl .jenis-bocor{background:rgba(239,68,68,.07);color:#f87171;font-weight:700;font-size:10px;letter-spacing:.04em;}
+.monitor-tbl .stok-cell{background:rgba(234,179,8,.08);color:#fbbf24;font-weight:700;}
+.monitor-tbl .masuk-cell{color:#34d399;}
+.monitor-tbl .keluar-cell{color:#f87171;}
+.monitor-tbl .akhir-cell{font-weight:700;color:var(--text);}
+.monitor-tbl .akhir-neg{color:#ef4444;}
+.monitor-tbl input[type=number]{width:60px;background:rgba(234,179,8,.15);border:1px solid rgba(234,179,8,.4);border-radius:4px;padding:2px 4px;color:#fbbf24;font-size:11px;font-weight:700;text-align:center;}
+.monitor-tbl .ket-cell{font-size:11px;color:var(--muted);text-align:left;min-width:120px;}
+
+/* RIWAYAT TABLE */
+.riwayat-tbl{width:100%;border-collapse:collapse;font-size:12px;}
+.riwayat-tbl th{background:var(--bg);color:var(--muted);padding:7px 9px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);}
+.riwayat-tbl td{padding:8px 9px;border-bottom:1px solid var(--border);}
+.riwayat-tbl tr:hover td{background:rgba(255,255,255,.02);}
+:root[data-theme="light"] .riwayat-tbl tr:hover td{background:rgba(0,0,0,.03);}
+.riwayat-tbl tr:last-child td{border-bottom:none;}

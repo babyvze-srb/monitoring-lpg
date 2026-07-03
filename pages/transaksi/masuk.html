@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Barang Masuk – Monitoring LPG</title>
+<link rel="stylesheet" href="../../css/base.css">
+<link rel="stylesheet" href="../../css/components.css">
+<link rel="stylesheet" href="../../css/tables.css">
+<link rel="stylesheet" href="../../css/forms.css">
+<link rel="stylesheet" href="../../css/responsive.css">
+</head>
+<body>
+
+<div id="loading-screen" style="position:fixed;inset:0;background:#0f1117;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s;">
+  <style>.lr2 div{box-sizing:border-box;display:block;position:absolute;width:40px;height:40px;margin:4px;border:4px solid #f97316;border-radius:50%;animation:lr2 1.2s cubic-bezier(.5,0,.5,1) infinite;border-color:#f97316 transparent transparent transparent;}
+  .lr2 div:nth-child(1){animation-delay:-.45s;}.lr2 div:nth-child(2){animation-delay:-.3s;}.lr2 div:nth-child(3){animation-delay:-.15s;}
+  @keyframes lr2{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}</style>
+  <div style="width:48px;height:48px;position:relative;margin-bottom:16px"><div class="lr2"><div></div><div></div><div></div><div></div></div></div>
+  <p style="color:#8b91a7;font-size:13px">Memuat Barang Masuk...</p>
+</div>
+
+<div class="app">
+  <div id="sidebar-wrap"></div>
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="hamburger" onclick="toggleSidebar()">☰</button>
+        <h3>📥 Input Barang Masuk</h3>
+      </div>
+      <div id="topbar-user-tag"></div>
+    </div>
+    <div class="content">
+      <div id="alert-bar"></div>
+      <div id="page-content"></div>
+    </div>
+  </div>
+</div>
+
+<div id="modal-root"></div>
+<div id="confirm-root"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="../../js/config.js"></script>
+<script src="../../js/state.js"></script>
+<script src="../../js/supabase-client.js"></script>
+<script src="../../js/data-service.js"></script>
+<script src="../../js/compute.js"></script>
+<script src="../../js/utils/dom-helpers.js"></script>
+<script src="../../js/utils/export-helpers.js"></script>
+<script src="../../js/ui/sidebar.js"></script>
+<script src="../../js/app-core.js"></script>
+<script src="../../js/ui/form-input.js"></script>
+<script>
+function onRealtimeUpdate() { setContent(renderFormInput("masuk")); }
+boot(function() {
+  setContent(renderFormInput("masuk"));
+});
+</script>
+
+</body>
+</html>
