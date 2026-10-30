@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Masuk – Monitor Stok</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/forms.css">
+<style>
+  body{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:20px;
+    background-image:radial-gradient(color-mix(in srgb,var(--text) 9%,transparent) 1px,transparent 1px);background-size:22px 22px;}
+  .login-theme{position:fixed;top:16px;right:16px;}
+  .login-card{width:380px;max-width:100%;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:32px;animation:slideUp .3s ease;}
+  .login-mark{width:40px;height:40px;border-radius:10px;background:var(--text);color:var(--bg);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:18px;}
+  .login-card h1{font-size:20px;font-weight:600;letter-spacing:-.02em;}
+  .login-sub{color:var(--muted);margin:4px 0 24px;}
+  .input-wrap{position:relative;}
+  .input-wrap .ico-left{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
+  .input-wrap input{padding-left:34px;}
+  .toggle-pw{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);padding:4px 6px;font-size:14px;}
+  .toggle-pw:hover{color:var(--text);}
+  .login-err{color:var(--bad);font-size:12.5px;min-height:18px;margin-bottom:10px;}
+  .login-cats{display:flex;gap:14px;margin-top:22px;padding-top:18px;border-top:1px solid var(--border);color:var(--muted);font-size:12px;flex-wrap:wrap;}
+  .login-cats i{margin-right:5px;}
+  .login-off{padding:10px 12px;border:1px solid color-mix(in srgb,var(--bad) 35%,transparent);border-radius:8px;color:var(--bad);font-size:12.5px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+</style>
+</head>
+<body>
+<button class="icon-btn login-theme" onclick="toggleTheme()" title="Ganti tema"><i class="bi bi-circle-half"></i></button>
+<div id="root"><div class="login-card"><div class="spinner"></div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<!-- Kredensial Supabase dipusatkan di js/config.js (tidak diduplikasi di sini). -->
+<script src="js/config.js"></script>
+<script src="js/ui/inspector.js"></script>
+<script>
+let SB=null, sbOk=false;
+
+/* Deteksi "fungsi RPC belum ada" → schema.sql belum dijalankan. */
+function rpcMissing(err){
+  const m=((err&&(err.code||err.message))||'').toString();
+  return m.includes('PGRST202')||m.includes('Could not find the function')
+      ||m.includes('schema cache')||m.includes('does not exist')||m.includes('404');
+}
+
+async function init(){
+  try{
+    SB=supabase.createClient(SB_URL,SB_ANON);
+    /* Probe koneksi via tabel yang boleh dibaca anon (lpg_users dikunci RLS
+       setelah schema.sql dijalankan). */
+    const {error}=await SB.from('lpg_regions').select('name').limit(1);
+    if(error) throw error;
+    sbOk=true;
+  }catch(e){
+    sbOk=false;
+    console.error(e);
+  }
+  renderLogin();
+}
+
+/* Verifikasi kredensial. Jalur aman: RPC lpg_login (password di-hash & dicek
+   di server). Fallback ke pencocokan langsung HANYA bila schema.sql belum
+   dijalankan; setelah migrasi, tabel users terkunci sehingga hanya RPC dipakai. */
+async function loginLookup(u,p){
+  const r=await SB.rpc('lpg_login',{p_username:u,p_password:p});
+  if(!r.error) return (r.data&&r.data[0])||null;
+  if(rpcMissing(r.error)){
+    console.warn('[LPG] RPC lpg_login belum ada — memakai jalur lama. Jalankan supabase/schema.sql untuk mengaktifkan keamanan.');
+    const r2=await SB.from('lpg_users').select('*').eq('username',u).eq('password',p).limit(1);
+    return (r2.data&&r2.data[0])||null;
+  }
+  throw r.error;
+}
+
+function renderLogin(){
+  document.getElementById('root').innerHTML=`
+  <div class="login-card">
+    <div class="login-mark"><i class="bi bi-boxes"></i></div>
+    <h1>Monitor Stok</h1>
+    <p class="login-sub">Masuk dengan akun dari Super Admin.</p>
+    ${!sbOk?`<div class="login-off"><span>Gagal terhubung ke database.</span><button class="btn btn-ghost btn-sm" onclick="location.reload()">Coba Lagi</button></div>`:''}
+    <div class="field">
+      <label>Username</label>
+      <div class="input-wrap">
+        <i class="bi bi-person ico-left"></i>
+        <input id="iu" type="text" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <div class="input-wrap">
+        <i class="bi bi-key ico-left"></i>
+        <input id="ip" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+        <button class="toggle-pw" onclick="togglePw()" id="pw-eye" title="Tampilkan password" type="button"><i class="bi bi-eye"></i></button>
+      </div>
+    </div>
+    <div class="login-err" id="lerr"></div>
+    <button class="btn btn-primary btn-block" id="btn-login" onclick="doLogin()" ${!sbOk?'disabled':''}>
+      <span id="btn-txt">Masuk</span>
+    </button>
+    <div class="login-cats">
+      <span><i class="bi bi-fire"></i>LPG</span>
+      <span><i class="bi bi-droplet-half"></i>Pelumas Retail</span>
+      <span><i class="bi bi-database"></i>Pelumas Drum</span>
+    </div>
+  </div>`;
+}
+
+function togglePw(){
+  const inp=document.getElementById('ip');
+  const btn=document.getElementById('pw-eye');
+  if(inp.type==='password'){inp.type='text';btn.innerHTML='<i class="bi bi-eye-slash"></i>';}
+  else{inp.type='password';btn.innerHTML='<i class="bi bi-eye"></i>';}
+}
+
+async function doLogin(){
+  const u=document.getElementById('iu').value.trim();
+  const p=document.getElementById('ip').value.trim();
+  const errEl=document.getElementById('lerr');
+  const btn=document.getElementById('btn-login');
+  const btnTxt=document.getElementById('btn-txt');
+
+  errEl.textContent='';
+  if(!u||!p){errEl.textContent='Username dan password wajib diisi';return;}
+  if(!SB||!sbOk){errEl.textContent='Tidak terhubung ke database. Muat ulang halaman.';return;}
+
+  btn.disabled=true;
+  btnTxt.textContent='Memeriksa...';
+
+  try{
+    const data=await loginLookup(u,p);
+    if(!data){
+      errEl.textContent='Username atau password salah';
+      btn.disabled=false; btnTxt.textContent='Masuk';
+      return;
+    }
+    if(data.role==='operator'&&!data.region){
+      errEl.textContent='Akun admin gudang belum memiliki region. Hubungi Super Admin.';
+      btn.disabled=false; btnTxt.textContent='Masuk';
+      return;
+    }
+    // Simpan session ke sessionStorage lalu redirect
+    sessionStorage.setItem('lpg_me',JSON.stringify({
+      id:data.id,username:data.username,name:data.name,
+      role:data.role,region:data.region||null
+    }));
+    // Log ke activity log
+    try{
+      await SB.from('lpg_activity_log').insert({
+        id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),
+        user_id:data.id,username:data.username,name:data.name,
+        role:data.role,region:data.region||null,
+        action:'LOGIN',detail:'Login berhasil',
+        created_at:new Date().toISOString()
+      });
+    }catch(e){}
+    btnTxt.textContent='Berhasil, mengalihkan...';
+    window.location.href=data.role==='sopir'?'pages/transfer/sopir.html':'pages/dashboard/dashboard.html';
+  }catch(e){
+    errEl.textContent='Koneksi ke database gagal. Coba lagi.';
+    btn.disabled=false; btnTxt.textContent='Masuk';
+  }
+}
+
+init();
+</script>
+</body>
+</html>

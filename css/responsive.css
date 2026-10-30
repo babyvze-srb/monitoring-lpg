@@ -1,0 +1,52 @@
+/* HAMBURGER */
+.hamburger{display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;padding:4px;color:var(--text);font-size:20px;line-height:1;}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:49;}
+.sidebar-overlay.show{display:block;}
+/* Layar lebar: menu samping melipat dan isi halaman mengisi ruangnya. */
+@media(min-width:769px){
+  .sidebar{transition:width .2s ease,visibility .2s;}
+  .sidebar>*{min-width:235px;}
+  html.sb-closed .sidebar{width:0;border-right-width:0;visibility:hidden;}
+}
+
+@media(max-width:1000px){
+  .dash-grid{grid-template-columns:minmax(0,1fr);gap:0;}
+  .kpi-row{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media(max-width:768px){
+  .app{flex-direction:column;}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;height:100dvh;width:264px;max-width:84vw;z-index:50;transform:translateX(-100%);transition:transform .22s ease;}
+  .sidebar.open{transform:translateX(0);box-shadow:0 0 32px rgba(0,0,0,.35);}
+  .main{width:100%;height:100dvh;}
+  .topbar{padding:0 12px;gap:8px;}
+  .topbar h3 .bi{display:none;}
+  .seg-cat .seg-btn{padding:4px 7px;}
+  .seg-cat .seg-btn span{display:none;}
+  .seg-cat .seg-btn.active span{display:inline;}
+  .content{padding:14px 12px;}
+  .stats-grid{grid-template-columns:1fr 1fr;gap:8px;}
+  .stat-card .val{font-size:21px;}
+  .form-grid,.form-grid-2{grid-template-columns:1fr;}
+  .line-form{grid-template-columns:1fr 1fr;}
+  .line-form .line-add{grid-column:1/-1;}
+  .detail-grid{grid-template-columns:minmax(0,1fr);}
+  .card{padding:12px;}
+  .card-flush{padding:0;}
+  .cat-tiles{grid-template-columns:repeat(3,minmax(150px,1fr));overflow-x:auto;scrollbar-width:none;}
+  .cat-val{font-size:24px;}
+  .kpi-val{font-size:22px;}
+  .month-tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;}
+  .month-tab{flex-shrink:0;}
+  .modal-bg{align-items:flex-end;padding:0;}
+  .modal{width:100%;max-width:100%;border-radius:14px 14px 0 0;max-height:90dvh;border-bottom:none;}
+  .action-card{flex-wrap:wrap;}
+  .action-card .btn{width:100%;}
+  .search-box{max-width:none;flex-basis:100%;}
+  input,select,textarea{font-size:16px;height:38px;} /* cegah zoom otomatis di iOS */
+  .chip-add{font-size:13px;height:32px;}
+  .monitor-tbl input[type=number]{font-size:13px;height:26px;}
+}
+@media(max-width:400px){
+  .kpi-row{gap:8px;}
+  .kpi{padding:11px;}
+}

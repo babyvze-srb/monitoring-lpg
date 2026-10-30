@@ -1,0 +1,45 @@
+/* MONITOR TABLE */
+.monitor-wrap{overflow-x:auto;margin-bottom:16px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.monitor-tbl{border-collapse:collapse;min-width:900px;width:100%;font-size:12.5px;}
+.monitor-tbl th,.monitor-tbl td{border:1px solid var(--border);}
+.monitor-tbl thead tr:first-child th{border-top:none;}
+.monitor-tbl tr>:first-child{border-left:none;}
+.monitor-tbl tr>:last-child{border-right:none;}
+.monitor-tbl tbody tr:last-child td{border-bottom:none;}
+.monitor-tbl th{background:var(--surface4);color:var(--muted);font-weight:500;text-align:center;font-size:11px;padding:6px 8px;}
+.monitor-tbl td{padding:5px 8px;text-align:center;}
+.monitor-tbl .th-group,.monitor-tbl .th-50,.monitor-tbl .th-12,.monitor-tbl .th-55{background:var(--surface4);color:var(--text);font-size:11.5px;padding:7px 8px;}
+.monitor-tbl .th-group{background:color-mix(in srgb,var(--accent) 10%,var(--surface));}
+.monitor-tbl .th-50{background:color-mix(in srgb,var(--c-blue) 11%,var(--surface));}
+.monitor-tbl .th-12{background:color-mix(in srgb,var(--c-green) 11%,var(--surface));}
+.monitor-tbl .th-55{background:color-mix(in srgb,var(--c-violet) 11%,var(--surface));}
+.monitor-tbl .region-cell{font-weight:500;padding:0 12px;text-align:left;white-space:nowrap;vertical-align:middle;}
+.monitor-tbl .jenis-isi,.monitor-tbl .jenis-baik{color:var(--ok);font-weight:500;font-size:11.5px;}
+.monitor-tbl .jenis-kosong{color:var(--muted);font-weight:500;font-size:11.5px;}
+.monitor-tbl .jenis-bocor,.monitor-tbl .jenis-rusak{color:var(--bad);font-weight:500;font-size:11.5px;}
+.monitor-tbl .stok-cell{color:var(--muted);}
+.monitor-tbl .masuk-cell{color:var(--ok);}
+.monitor-tbl .keluar-cell{color:var(--bad);}
+.monitor-tbl .akhir-cell{font-weight:600;background:var(--surface4);}
+.monitor-tbl .akhir-neg{color:var(--bad);font-weight:600;background:var(--surface4);}
+.monitor-tbl input[type=number]{width:62px;height:24px;padding:0 4px;font-size:12px;text-align:center;}
+.monitor-tbl .ket-cell{font-size:12px;color:var(--muted);text-align:left;min-width:120px;}
+/* Baris rincian transaksi di laporan harian */
+.monitor-tbl tbody tr[onclick]:hover td{background:var(--surface2);}
+
+/* RIWAYAT TABLE */
+.riwayat-tbl{width:100%;border-collapse:collapse;font-size:13px;}
+.riwayat-tbl th{background:color-mix(in srgb,var(--accent) 6%,var(--surface));color:var(--text);padding:8px 12px;text-align:left;font-size:12px;font-weight:500;border-bottom:1px solid var(--border);white-space:nowrap;}
+.riwayat-tbl td{padding:9px 12px;border-bottom:1px solid var(--border);}
+.riwayat-tbl tr:hover td{background:color-mix(in srgb,var(--text) 2.5%,transparent);}
+.riwayat-tbl tr:last-child td{border-bottom:none;}
+.card:not(.card-flush) .riwayat-tbl th:first-child,.card:not(.card-flush) .riwayat-tbl td:first-child{padding-left:4px;}
+.num{text-align:right!important;font-variant-numeric:tabular-nums;}
+.td-end{text-align:right;}
+.td-strong{font-weight:500;}
+.stock-tbl .neg{color:var(--bad);}
+.stock-tbl .low{color:var(--warn);font-weight:500;}
+.stock-tbl .row-sub td{color:var(--muted);background:var(--surface4);font-size:12.5px;}
+.line-tbl{margin-bottom:6px;}
+.trf-tbl td{white-space:nowrap;}
+.riwayat-tbl td:first-child{white-space:nowrap;}
